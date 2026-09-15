@@ -1,270 +1,227 @@
--- MM2 Cyberpunk God-Mode UI - FĂRĂ CHAT & ESP REPARAT
+-- MM2 Cyber-Troll God - FĂRĂ CHAT, FUNCȚII NOI & OPRIRE INSTANT
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
--- Curățare interfețe vechi
-if game.CoreGui:FindFirstChild("MM2_CyberpunkGod") then
-    game.CoreGui.MM2_CyberpunkGod:Destroy()
-end
+-- Curățare GUI vechi
+if game.CoreGui:FindFirstChild("MM2_TrollGod") then game.CoreGui.MM2_TrollGod:Destroy() end
 
--- 1. STRUCTURA DE BAZĂ A INTERFEȚEI (RGB GLOW & GLASS DESIGN)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MM2_CyberpunkGod"
+ScreenGui.Name = "MM2_TrollGod"
 ScreenGui.Parent = game.CoreGui
 ScreenGui.ResetOnSpawn = false
 
+-- Fereastra Principală
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 0, 0, 0) -- Animație entry de la 0
-MainFrame.Position = UDim2.new(0.5, -240, 0.5, -150)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+MainFrame.Size = UDim2.new(0, 460, 0, 310)
+MainFrame.Position = UDim2.new(0.5, -230, 0.5, -155)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
 MainFrame.Active = true
 MainFrame.Draggable = true
-MainFrame.ClipsDescendants = true
 MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 14)
-MainCorner.Parent = MainFrame
+local Stroke = Instance.new("UIStroke", MainFrame)
+Stroke.Thickness = 2
+Stroke.Color = Color3.fromRGB(255, 165, 0) -- Neon Amber
 
--- Margine Neon RGB Animata
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(255, 0, 100)
-UIStroke.Parent = MainFrame
-
-task.spawn(function()
-    while task.wait(0.05) do
-        local hue = tick() % 5 / 5
-        UIStroke.Color = Color3.fromHSV(hue, 1, 1)
-    end
-end)
-
--- 2. BARĂ LATERALĂ (SIDEBAR BANNER)
+-- Sidebar și Pagini
 local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 140, 1, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(6, 6, 10)
+Sidebar.Size = UDim2.new(0, 130, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(8, 8, 12)
 Sidebar.BorderSizePixel = 0
 Sidebar.Parent = MainFrame
+Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
 
-local SideCorner = Instance.new("UICorner")
-SideCorner.CornerRadius = UDim.new(0, 14)
-SideCorner.Parent = Sidebar
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, -145, 1, -20)
+Container.Position = UDim2.new(0, 140, 0, 10)
+Container.BackgroundTransparency = 1
+Container.Parent = MainFrame
 
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Text = "CYBERPUNK v2"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 15
-Title.BackgroundTransparency = 1
-Title.Parent = Sidebar
+local Layout = Instance.new("UIPageLayout", Container)
+Layout.TweenTime = 0.3
+Layout.ScrollWheelInput = false
 
--- 3. MANAGER PAGINI MULTIPLE
-local PagesContainer = Instance.new("Frame")
-PagesContainer.Size = UDim2.new(1, -160, 1, -20)
-PagesContainer.Position = UDim2.new(0, 150, 0, 10)
-PagesContainer.BackgroundTransparency = 1
-PagesContainer.Parent = MainFrame
-
-local PageLayout = Instance.new("UIPageLayout")
-PageLayout.TweenTime = 0.3
-PageLayout.EasingStyle = Enum.EasingStyle.Quart
-PageLayout.ScrollWheelInput = false
-PageLayout.Parent = PagesContainer
-
--- Creare pagini dedicate
 local function CreatePage()
-    local Page = Instance.new("ScrollingFrame")
+    local Page = Instance.new("ScrollingFrame", Container)
     Page.BackgroundTransparency = 1
     Page.Size = UDim2.new(1, 0, 1, 0)
-    Page.CanvasSize = UDim2.new(0, 0, 0, 400)
+    Page.CanvasSize = UDim2.new(0, 0, 0, 450)
     Page.ScrollBarThickness = 2
-    Page.Parent = PagesContainer
-    
-    local List = Instance.new("UIListLayout")
-    List.Padding = UDim.new(0, 8)
-    List.Parent = Page
+    local L = Instance.new("UIListLayout", Page)
+    L.Padding = UDim.new(0, 8)
     return Page
 end
 
-local PageVisuals = CreatePage()
-local PageCombat = CreatePage()
+local PageMovement = CreatePage()
 local PageExploits = CreatePage()
 
--- Butoane Navigare Sidebar
 local function AddTab(name, posY, page)
-    local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(1, -16, 0, 35)
-    Btn.Position = UDim2.new(0, 8, 0, posY)
-    Btn.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-    Btn.Text = name
-    Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Btn.Font = Enum.Font.GothamMedium
-    Btn.TextSize = 12
-    Btn.Parent = Sidebar
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    local B = Instance.new("TextButton", Sidebar)
+    B.Size = UDim2.new(1, -16, 0, 36)
+    B.Position = UDim2.new(0, 8, 0, posY)
+    B.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+    B.Text = name
+    B.TextColor3 = Color3.fromRGB(230, 230, 230)
+    B.Font = Enum.Font.GothamBold
+    B.TextSize = 11
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0, 6)
+    B.MouseButton1Click:Connect(function() Layout:JumpTo(page) end)
+end
+
+AddTab("🚀 Abilități", 50, PageMovement)
+AddTab("👾 Map Troll", 95, PageExploits)
+
+-- Configurații Stări
+_G.Fly_State = false
+_G.Xray_State = false
+_G.Invis_State = false
+local flySpeed = 45
+
+-- Implementare Butoane Toggle
+local function AddOption(page, name, callback)
+    local F = Instance.new("Frame", page)
+    F.Size = UDim2.new(1, -5, 0, 45)
+    F.BackgroundColor3 = Color3.fromRGB(22, 22, 30)
+    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 8)
     
-    Btn.MouseButton1Click:Connect(function()
-        PageLayout:JumpTo(page)
+    local L = Instance.new("TextLabel", F)
+    L.Size = UDim2.new(0.7, 0, 1, 0)
+    L.Position = UDim2.new(0, 12, 0, 0)
+    L.Text = name
+    L.TextColor3 = Color3.fromRGB(240, 240, 240)
+    L.Font = Enum.Font.GothamMedium
+    L.TextSize = 12
+    L.TextXAlignment = Enum.TextXAlignment.Left
+    L.BackgroundTransparency = 1
+    
+    local S = Instance.new("TextButton", F)
+    S.Size = UDim2.new(0, 42, 0, 20)
+    S.Position = UDim2.new(1, -52, 0.5, -10)
+    S.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    S.Text = ""
+    Instance.new("UICorner", S).CornerRadius = UDim.new(0, 10)
+    
+    local D = Instance.new("Frame", S)
+    D.Size = UDim2.new(0, 14, 0, 14)
+    D.Position = UDim2.new(0, 3, 0.5, -7)
+    D.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Instance.new("UICorner", D).CornerRadius = UDim.new(0, 7)
+    
+    local activated = false
+    S.MouseButton1Click:Connect(function()
+        activated = not activated
+        D.Position = activated and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
+        S.BackgroundColor3 = activated and Color3.fromRGB(255, 140, 0) or Color3.fromRGB(50, 50, 60)
+        callback(activated)
     end)
 end
 
-AddTab("👁️ Visuals ESP", 60, PageVisuals)
-AddTab("⚔️ Combat / Aim", 105, PageCombat)
-AddTab("💰 Exploits / Farm", 150, PageExploits)
-
--- 4. VARIABILE DE CONFIGURARE COMPLETĂ
-_G.ESP_Active = false
-_G.GunESP_Active = false
-_G.Speed_Active = false
-_G.Jump_Active = false
-_G.CoinFarm_Active = false
-_G.KillAura_Active = false
-
--- 5. CREARE OPȚIUNI (TOGGLES MODERNE LUX)
-local function AddToggle(page, name, callback)
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, -5, 0, 45)
-    Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-    Frame.Parent = page
-    Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
-    
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.7, 0, 1, 0)
-    Label.Position = UDim2.new(0, 12, 0, 0)
-    Label.Text = name
-    Label.TextColor3 = Color3.fromRGB(240, 240, 240)
-    Label.Font = Enum.Font.GothamMedium
-    Label.TextSize = 13
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.BackgroundTransparency = 1
-    Label.Parent = Frame
-    
-    local Switch = Instance.new("TextButton")
-    Switch.Size = UDim2.new(0, 42, 0, 20)
-    Switch.Position = UDim2.new(1, -52, 0.5, -10)
-    Switch.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-    Switch.Text = ""
-    Switch.Parent = Frame
-    Instance.new("UICorner", Switch).CornerRadius = UDim.new(0, 10)
-    
-    local Dot = Instance.new("Frame")
-    Dot.Size = UDim2.new(0, 14, 0, 14)
-    Dot.Position = UDim2.new(0, 3, 0.5, -7)
-    Dot.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Dot.Parent = Switch
-    Instance.new("UICorner", Dot).CornerRadius = UDim.new(0, 7)
-    
-    local state = false
-    Switch.MouseButton1Click:Connect(function()
-        state = not state
-        local tPos = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
-        local tColor = state and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(45, 45, 55)
-        
-        TweenService:Create(Dot, TweenInfo.new(0.2), {Position = tPos}):Play()
-        TweenService:Create(Switch, TweenInfo.new(0.2), {BackgroundColor3 = tColor}):Play()
-        callback(state)
-    end)
+-- Funcție separată pentru butoane de execuție instantă
+local function AddActionClick(page, name, callback)
+    local B = Instance.new("TextButton", page)
+    B.Size = UDim2.new(1, -5, 0, 40)
+    B.BackgroundColor3 = Color3.fromRGB(28, 28, 40)
+    B.Text = name
+    B.TextColor3 = Color3.fromRGB(255, 255, 255)
+    B.Font = Enum.Font.GothamBold
+    B.TextSize = 12
+    Instance.new("UICorner", B).CornerRadius = UDim.new(0, 8)
+    B.MouseButton1Click:Connect(callback)
 end
 
--- 6. LOGICA COLOZALĂ JOC (FUNCTII EXCLUSIVE MM2)
-local function RefreshESP(player, color, enable)
-    if player.Character then
-        local old = player.Character:FindFirstChild("CyberGodESP")
-        if old then old:Destroy() end
-        
-        if enable and player.Character:FindFirstChild("HumanoidRootPart") then
-            local hl = Instance.new("Highlight")
-            hl.Name = "CyberGodESP"
-            hl.FillColor = color
-            hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-            hl.FillTransparency = 0.4
-            hl.Parent = player.Character
-        end
-    end
-end
-
+-- LOGICA SISTEMELOR NOI (Fly & Xray Mechanics)
+local bodyVelocity, bodyGyro
 RunService.Heartbeat:Connect(function()
-    -- Scanare Jucători (Roluri & ESP)
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer then
-            if _G.ESP_Active then
-                local isMerd = p.Backpack:FindFirstChild("Knife") or p.Character:FindFirstChild("Knife")
-                local isSher = p.Backpack:FindFirstChild("Gun") or p.Character:FindFirstChild("Gun")
-                
-                if isMerd then
-                    RefreshESP(p, Color3.fromRGB(255, 0, 50), true)  -- ROȘU: Murderer
-                elseif isSher then
-                    RefreshESP(p, Color3.fromRGB(0, 100, 255), true) -- ALBASTRU: Sheriff
-                else
-                    RefreshESP(p, Color3.fromRGB(0, 255, 100), true) -- VERDE: Innocent
-                end
-            else
-                RefreshESP(p, nil, false) -- OPRIRE IMEDIATĂ ESP
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+        -- Sistem de Zbor Adaptat pe Mobil (Folosește camera pentru direcție)
+        if _G.Fly_State then
+            char.Humanoid.PlatformStand = true
+            if not bodyVelocity then
+                bodyVelocity = Instance.new("BodyVelocity", char.HumanoidRootPart)
+                bodyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                bodyGyro = Instance.new("BodyGyro", char.HumanoidRootPart)
+                bodyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
             end
-            
-            -- KillAura automată (Te apără dacă ești Sheriff sau atacă automat)
-            if _G.KillAura_Active and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local dist = (LocalPlayer.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-                if dist < 15 and LocalPlayer.Character:FindFirstChild("Knife") then
-                    LocalPlayer.Character.Knife:Activate()
-                end
-            end
-        end
-    end
-    
-    -- Gun ESP (Evidențiere pistol căzut pe jos)
-    local gunDrop = game.Workspace:FindFirstChild("GunDrop")
-    if gunDrop then
-        local gHl = gunDrop:FindFirstChild("GunGlow")
-        if _G.GunESP_Active then
-            if not gHl then
-                gHl = Instance.new("Highlight", gunDrop)
-                gHl.Name = "GunGlow"
-                gHl.FillColor = Color3.fromRGB(255, 255, 0) -- GALBEN
-                gHl.FillTransparency = 0.2
-            end
+            bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+            local moveDir = char.Humanoid.MoveDirection
+            bodyVelocity.Velocity = moveDir * flySpeed + (UserInputService:IsKeyDown(Enum.KeyCode.Space) and Vector3.new(0, flySpeed, 0) or Vector3.new(0, 0, 0))
         else
-            if gHl then gHl:Destroy() end
+            if bodyVelocity then bodyVelocity:Destroy() bodyVelocity = nil end
+            if bodyGyro then bodyGyro:Destroy() bodyGyro = nil end
+            char.Humanoid.PlatformStand = false
         end
-    end
-    
-    -- Auto Coin Farm (Teleportare fină la bănuți)
-    if _G.CoinFarm_Active and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        for _, obj in pairs(game.Workspace:GetChildren()) do
-            if obj.Name == "Coin_Sub" or obj:FindFirstChild("Coin") or obj.Name == "NormalCoin" then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = obj.CFrame
-                task.wait(0.1)
-                break
+        
+        -- Glitch invizibilitate parțială
+        if _G.Invis_State then
+            for _, part in pairs(char:GetChildren()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.Transparency = 0.7
+                end
             end
         end
-    end
-    
-    -- Modificatori fizici jucător
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = _G.Speed_Active and 25 or 16
-        LocalPlayer.Character.Humanoid.JumpPower = _G.Jump_Active and 75 or 50
     end
 end)
 
--- POPULARE PAGINI CU OPȚIUNI NOI
-AddToggle(PageVisuals, "Player Wallhack (Chams RGB)", function(v) _G.ESP_Active = v end)
-AddToggle(PageVisuals, "Dropped Gun ESP (Yellow)", function(v) _G.GunESP_Active = v end)
+-- LOGICĂ X-RAY (Transparență pereți mapă)
+local originalTransparencies = {}
+local function SetXray(enable)
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and not obj:IsDescendantOf(Players) and not obj.Parent:FindFirstChild("Humanoid") then
+            if enable then
+                if not originalTransparencies[obj] then originalTransparencies[obj] = obj.Transparency end
+                if obj.Name ~= "Terrain" then obj.Transparency = 0.65 end
+            else
+                if originalTransparencies[obj] then
+                    obj.Transparency = originalTransparencies[obj]
+                end
+            end
+        end
+    end
+    if not enable then originalTransparencies = {} end
+end
 
-AddToggle(PageCombat, "Silent Legit Speed (x25)", function(v) _G.Speed_Active = v end)
-AddToggle(PageCombat, "Infinite High Jump", function(v) _G.Jump_Active = v end)
-AddToggle(PageCombat, "Auto Attack KillAura", function(v) _G.KillAura_Active = v end)
+-- POPULARE TABURI
+AddOption(PageMovement, "Activează Zbor (Fly Hack)", function(v) _G.Fly_State = v end)
+AddOption(PageMovement, "Glitch Invizibilitate Corp", function(v) 
+    _G.Invis_State = v 
+    if not v and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetChildren()) do
+            if part:IsA("BasePart") then part.Transparency = 0 end
+        end
+    end
+end)
 
-AddToggle(PageExploits, "Auto Farm Coins (Teleport)", function(v) _G.CoinFarm_Active = v end)
+AddOption(PageExploits, "X-Ray Vision (Pereți Sticlă)", function(v) SetXray(v) end)
+AddActionClick(PageExploits, "📍 Teleportare în Lobby (Salvare)", function()
+    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyZone")
+    if lobby and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = lobby:GetModelCFrame()
+    else
+        -- Teleportare de siguranță la coordonatele de spawn ale hărții principale
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 50, 0)
+    end
+end)
 
--- 7. ANIMAȚIE DE INTRARE ULTRA FINĂ
-MainFrame:TweenSize(UDim2.new(0, 480, 0, 300), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, 0.5, true)
+-- Buton Minimizar Mini-Circle
+local ToggleBtn = Instance.new("TextButton", ScreenGui)
+ToggleBtn.Size = UDim2.new(0, 44, 0, 44)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.25, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+ToggleBtn.Text = "🛠️"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 165, 0)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 16
+Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 22)
+local tS = Instance.new("UIStroke", ToggleBtn)
+tS.Thickness = 1.5
+tS.Color = Color3.fromRGB(255, 165, 0)
 
--- 8. BUTON PLUTITOR DE ASCUNDERE (FAL MAI FAIN)
-local ToggleBtn = Instance.new("TextButton")
-ToggleBtn.Size = UDim2.new(0, 46, 0, 46)
-ToggleBtn.Position = UDim2.new(0.02, 0, 0.2, 0)
-ToggleBtn.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
+local open = true
+ToggleBtn.MouseButton1Click:Connect(function()
+    open = not open
+    MainFrame.Visible = open
+end)
